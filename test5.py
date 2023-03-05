@@ -102,8 +102,6 @@ is_cuda = len(sys.argv) > 1 and sys.argv[1] == "cuda"
 
 net = build_model(is_cuda)
 capture = load_capture()
-width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
-hiegh = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
 start = time.time_ns()
 frame_count = 0
@@ -116,24 +114,24 @@ while True:
     if frame is None:
         print("End of stream")
         break
+    if total_frames % 2 == 0:
+        inputImage = format_yolov5(frame)
+        outs = detect(inputImage, net)
 
-    inputImage = format_yolov5(frame)
-    outs = detect(inputImage, net)
+        class_ids, confidences, boxes = wrap_detection(inputImage, outs[0])
 
-    class_ids, confidences, boxes = wrap_detection(inputImage, outs[0])
+        frame_count += 1
+        total_frames += 1
 
-    frame_count += 1
-    total_frames += 1
-
-    for (classid, confidence, box) in zip(class_ids, confidences, boxes):
-         color = colors[int(classid) % len(colors)]
-         cv2.rectangle(frame, box, color, 2)
-         if (box[0] > 350 and box[1] > 150 and (box[0] + box[2]) < 850 and (box[1] + box[3]) < 500):
-            print("yes")
-         print((box[0] + box[2]), (box[1] + box[3]))
-         print(box)
-         cv2.rectangle(frame, (box[0], box[1] - 20), (box[0] + box[2], box[1]), color, -1)
-         cv2.putText(frame, class_list[classid], (box[0], box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, .5, (0,0,0))
+        for (classid, confidence, box) in zip(class_ids, confidences, boxes):
+            color = colors[int(classid) % len(colors)]
+            cv2.rectangle(frame, box, color, 2)
+            if (box[0] > 350 and box[1] > 150 and (box[0] + box[2]) < 850 and (box[1] + box[3]) < 500):
+                print("yes")
+            print((box[0] + box[2]), (box[1] + box[3]))
+            print(box)
+            cv2.rectangle(frame, (box[0], box[1] - 20), (box[0] + box[2], box[1]), color, -1)
+            cv2.putText(frame, class_list[classid], (box[0], box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, .5, (0,0,0))
 
     if frame_count >= 30:
         end = time.time_ns()
@@ -145,18 +143,19 @@ while True:
         fps_label = "FPS: %.2f" % fps
         cv2.putText(frame, fps_label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
-    #Bounding box
+        #Bounding box
     start_point = (350, 150)
-        # Ending coordinate, here (220, 220)
-        # represents the bottom right corner of rectangle
+            # Ending coordinate, here (220, 220)
+            # represents the bottom right corner of rectangle
     end_point = (850, 500)
-        # Blue color in BGR
+            # Blue color in BGR
     color = (255, 255, 255)
-        # Line thickness of 2 px
+            # Line thickness of 2 px
     thickness = 2
     cv2.rectangle(frame, start_point, end_point, color, thickness)
 
     cv2.imshow("output", frame)
+
 
     if cv2.waitKey(1) > -1:
         print("finished by user")
