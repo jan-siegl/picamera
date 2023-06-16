@@ -102,6 +102,7 @@ is_cuda = len(sys.argv) > 1 and sys.argv[1] == "cuda"
 
 net = build_model(is_cuda)
 capture = load_capture()
+#capture.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('m','j','p','g'))
 width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
 hiegh = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
@@ -109,6 +110,7 @@ start = time.time_ns()
 frame_count = 0
 total_frames = 0
 fps = -1
+
 
 while True:
 

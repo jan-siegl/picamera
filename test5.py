@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import cv2
 import time
 import sys
@@ -20,7 +21,7 @@ INPUT_WIDTH = 640
 INPUT_HEIGHT = 640
 SCORE_THRESHOLD = 0.2
 NMS_THRESHOLD = 0.4
-CONFIDENCE_THRESHOLD = 0.4
+CONFIDENCE_THRESHOLD = 0.8
 
 def detect(image, net):
     blob = cv2.dnn.blobFromImage(image, 1/255.0, (INPUT_WIDTH, INPUT_HEIGHT), swapRB=True, crop=False)
@@ -29,7 +30,8 @@ def detect(image, net):
     return preds
 
 def load_capture():
-    capture = cv2.VideoCapture(get_rtsp_url())
+    #capture = cv2.VideoCapture(get_rtsp_url())
+    capture = cv2.VideoCapture("testVideo/vaha-prujezd.mp4")
     return capture
 
 def load_classes():
@@ -95,6 +97,22 @@ def format_yolov5(frame):
     result[0:row, 0:col] = frame
     return result
 
+last_time = datetime.strptime("2023-06-07 15:37:24.455308", '%Y-%m-%d %H:%M:%S.%f')
+
+def set_time():
+    global last_time
+    last_time = datetime.now() + timedelta(seconds=30)
+
+set_time()
+
+def take_snapshot():
+    if datetime.now() > last_time:
+        print ("doubleYes")
+        set_time()
+    else:
+        print ("no")
+
+
 
 colors = [(255, 255, 0), (0, 255, 0), (0, 255, 255), (255, 0, 0)]
 
@@ -103,18 +121,26 @@ is_cuda = len(sys.argv) > 1 and sys.argv[1] == "cuda"
 net = build_model(is_cuda)
 capture = load_capture()
 
+
 start = time.time_ns()
 frame_count = 0
 total_frames = 0
 fps = -1
 
+fpsLimit = 0.25 # throttle limit
+startTime = time.time()
+
 while True:
+
+    nowTime = time.time()
+    #print(fpsLimit)
 
     _, frame = capture.read()
     if frame is None:
         print("End of stream")
         break
-    if total_frames % 2 == 0:
+    if (nowTime - startTime) > fpsLimit:
+        #print(nowTime)
         inputImage = format_yolov5(frame)
         outs = detect(inputImage, net)
 
@@ -126,35 +152,38 @@ while True:
         for (classid, confidence, box) in zip(class_ids, confidences, boxes):
             color = colors[int(classid) % len(colors)]
             cv2.rectangle(frame, box, color, 2)
-            if (box[0] > 350 and box[1] > 150 and (box[0] + box[2]) < 850 and (box[1] + box[3]) < 500):
+            if (box[0] > 300 and box[1] > 120 and (box[0] + box[2]) < 850 and (box[1] + box[3]) < 500):
                 print("yes")
-            print((box[0] + box[2]), (box[1] + box[3]))
-            print(box)
+                take_snapshot()
+            #print((box[0] + box[2]), (box[1] + box[3]))
+            #print(box)
             cv2.rectangle(frame, (box[0], box[1] - 20), (box[0] + box[2], box[1]), color, -1)
             cv2.putText(frame, class_list[classid], (box[0], box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, .5, (0,0,0))
 
-    if frame_count >= 30:
-        end = time.time_ns()
-        fps = 1000000000 * frame_count / (end - start)
-        frame_count = 0
-        start = time.time_ns()
+        if frame_count >= 30:
+            end = time.time_ns()
+            fps = 1000000000 * frame_count / (end - start)
+            frame_count = 0
+            start = time.time_ns()
 
-    if fps > 0:
-        fps_label = "FPS: %.2f" % fps
-        cv2.putText(frame, fps_label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+        if fps > 0:
+            fps_label = "FPS: %.2f" % fps
+            cv2.putText(frame, fps_label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
-        #Bounding box
-    start_point = (350, 150)
-            # Ending coordinate, here (220, 220)
-            # represents the bottom right corner of rectangle
-    end_point = (850, 500)
-            # Blue color in BGR
-    color = (255, 255, 255)
-            # Line thickness of 2 px
-    thickness = 2
-    cv2.rectangle(frame, start_point, end_point, color, thickness)
+            #Bounding box
+        #start_point = (350, 150)
+        start_point = (300, 120)
+                # Ending coordinate, here (220, 220)
+                # represents the bottom right corner of rectangle
+        #end_point = (850, 500)
+        end_point = (850, 500)
+                # Blue color in BGR
+        color = (255, 255, 255)
+                # Line thickness of 2 px
+        thickness = 2
+        cv2.rectangle(frame, start_point, end_point, color, thickness)
 
-    cv2.imshow("output", frame)
+        cv2.imshow("output", frame)
 
 
     if cv2.waitKey(1) > -1:

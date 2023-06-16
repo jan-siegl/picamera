@@ -32,7 +32,7 @@ while True:
 
     cv.imwrite(str(filepath), frame)
     #cv.imshow('frame', frame)
-    time.sleep(1)
+    time.sleep(0.1)
 
 
 
