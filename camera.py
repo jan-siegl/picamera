@@ -8,7 +8,7 @@ def get_rtsp_url():
     camera_address = "10.3.0.11"
 
     # This path and port is documented in our security camera's user manual
-    rtsp_path = "/Streaming/Channels/101/"
+    rtsp_path = "/Streaming/Channels/401/"
     rtsp_port = 554
 
     # The name of a file which we will exclude from version control, and save our username and password in it.
