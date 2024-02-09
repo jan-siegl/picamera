@@ -4,6 +4,7 @@ import cv2 as cv
 import time
 from datetime import datetime
 from pathlib import Path
+import savePicture
 
 import pytesseract
 
@@ -70,9 +71,11 @@ while True:
     if frame_count > 30:
         frame_count = 0
         # Our operations on the frame come here
-        cropped_image = frame[40:450, 825:1750]
+        #cropped_image = frame[40:450, 825:1750]
+        cropped_image = frame[20:450, 525:1750]
         gray = cv.cvtColor(cropped_image, cv.COLOR_BGR2GRAY)
-        ret, thresh = cv.threshold(gray, 40, 255, cv.THRESH_BINARY)
+        thresh = gray
+        #ret, thresh = cv.threshold(gray, 60, 255, cv.THRESH_BINARY)
 
         tSymbol = thresh[225, 885] # t symbol location
 
@@ -141,9 +144,10 @@ while True:
             #check if it is the same measurment for at least 3 * checked frames (if each 60th frame on 30 fps camera that means 6 seconds )
             if finalNumber == prev_finalNumber and finalNumber == prev_prev_finalNumber:
                 #check if it is not still the same measurment
-                if finalNumber > 0 and finalNumber != prev_measurment:
+                if finalNumber > 0 and finalNumber != prev_measurment and abs(finalNumber - prev_measurment) > 0.02:
                 
                     print(str(finalNumber) + " t")
+                    savePicture.savePicture(finalNumber)
 
                 prev_measurment = finalNumber
 
