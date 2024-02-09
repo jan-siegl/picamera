@@ -37,6 +37,8 @@ def getNum(segments):
             return 8;
         if segments == [0, 1, 2, 3, 5, 6]:
             return 9;
+        if segments == []:
+            return 0;
         # ERROR
         return -1;
 
@@ -74,26 +76,26 @@ while True:
         #cropped_image = frame[40:450, 825:1750]
         cropped_image = frame[20:450, 525:1750]
         gray = cv.cvtColor(cropped_image, cv.COLOR_BGR2GRAY)
-        thresh = gray
-        #ret, thresh = cv.threshold(gray, 60, 255, cv.THRESH_BINARY)
+        #thresh = gray
+        ret, thresh = cv.threshold(gray, 60, 255, cv.THRESH_BINARY)
 
-        tSymbol = thresh[225, 885] # t symbol location
+        tSymbol = thresh[245, 1185] # t symbol location
 
         #second decimal
         sDecSegments = []
-        if thresh[120, 700] == 255: 
+        if thresh[140, 1000] == 255: 
             sDecSegments.append(0)
-        if thresh[255, 660] == 255: 
+        if thresh[275, 960] == 255: 
             sDecSegments.append(1)
-        if thresh[385, 620] == 255: 
+        if thresh[405, 920] == 255: 
             sDecSegments.append(2)
-        if thresh[160, 620] == 255: 
+        if thresh[180, 920] == 255: 
             sDecSegments.append(3)
-        if thresh[350, 565] == 255: 
+        if thresh[370, 865] == 255: 
             sDecSegments.append(4)
-        if thresh[200, 730] == 255: 
+        if thresh[220, 1030] == 255: 
             sDecSegments.append(5)
-        if thresh[330, 695] == 255: 
+        if thresh[350, 995] == 255: 
             sDecSegments.append(6)
 
         sDecNumber = getNum(sDecSegments)
@@ -102,45 +104,64 @@ while True:
 
         #first decimal
         fDecSegments = []
-        if thresh[80, 460] == 255: 
+        if thresh[100, 760] == 255: 
             fDecSegments.append(0)
-        if thresh[220, 420] == 255: 
+        if thresh[240, 720] == 255: 
             fDecSegments.append(1)
-        if thresh[370, 380] == 255: 
+        if thresh[390, 680] == 255: 
             fDecSegments.append(2)
-        if thresh[130, 375] == 255: 
+        if thresh[150, 675] == 255: 
             fDecSegments.append(3)
-        if thresh[255, 330] == 255: 
+        if thresh[275, 630] == 255: 
             fDecSegments.append(4)
-        if thresh[160, 515] == 255: 
+        if thresh[180, 815] == 255: 
             fDecSegments.append(5)
-        if thresh[300, 475] == 255: 
+        if thresh[320, 775] == 255: 
             fDecSegments.append(6)
 
         fDecNumber = getNum(fDecSegments)
     
 
         #tons 
-        #first decimal
         tonsSegments = []
-        if thresh[40, 195] == 255: 
+        if thresh[60, 495] == 255: 
             tonsSegments.append(0)
-        if thresh[190, 150] == 255: 
+        if thresh[210, 450] == 255: 
             tonsSegments.append(1)
-        if thresh[345, 110] == 255: 
+        if thresh[365, 410] == 255: 
             tonsSegments.append(2)
-        if thresh[95, 100] == 255: 
+        if thresh[115, 400] == 255: 
             tonsSegments.append(3)
-        if thresh[265, 45] == 255: 
+        if thresh[285, 345] == 255: 
             tonsSegments.append(4)
-        if thresh[120, 255] == 255: 
+        if thresh[140, 555] == 255: 
             tonsSegments.append(5)
-        if thresh[285, 205] == 255: 
+        if thresh[305, 505] == 255: 
             tonsSegments.append(6)
-
+        
         tonsNumber = getNum(tonsSegments)
-        if tonsNumber != -1 and fDecNumber != -1 and sDecNumber != -1 and tSymbol == 255 and prev_tSymbol == 255 and prev_prev_tSymbol == 255:
-            finalNumber = float(str(tonsNumber) + "." + str(fDecNumber) + str(sDecNumber))
+
+        #tens oftons 
+        tensSegments = []
+        if thresh[25, 240] == 255: 
+            tensSegments.append(0)
+        if thresh[180, 190] == 255: 
+            tensSegments.append(1)
+        if thresh[335, 130] == 255: 
+            tensSegments.append(2)
+        if thresh[60, 125] == 255: 
+            tensSegments.append(3)
+        if thresh[225, 75] == 255: 
+            tensSegments.append(4)
+        if thresh[110, 255] == 255: 
+            tensSegments.append(5)
+        if thresh[280, 205] == 255: 
+            tensSegments.append(6)
+
+        tensNumber = getNum(tensSegments)
+
+        if tensNumber != -1 and tonsNumber != -1 and fDecNumber != -1 and sDecNumber != -1 and tSymbol == 255 and prev_tSymbol == 255 and prev_prev_tSymbol == 255:
+            finalNumber = float(str(tensNumber) + str(tonsNumber) + "." + str(fDecNumber) + str(sDecNumber))
             #check if it is the same measurment for at least 3 * checked frames (if each 60th frame on 30 fps camera that means 6 seconds )
             if finalNumber == prev_finalNumber and finalNumber == prev_prev_finalNumber:
                 #check if it is not still the same measurment
@@ -185,10 +206,10 @@ while True:
 
         #Bounding box
         # for t = start_point = (825, 150) end_point = (920, 370)
-        start_point = (825, 150)
+        start_point = (1125, 170)
             # Ending coordinate, here (220, 220)
             # represents the bottom right corner of rectangle
-        end_point = (920, 370)
+        end_point = (1220, 390)
             # Blue color in BGR
         color = (255, 0, 0)
             # Line thickness of 2 px
